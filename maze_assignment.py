@@ -164,6 +164,18 @@ def can_move(row, col, direction, north_wall, east_wall, rows, cols):
             return True
     return False
 
+#checking reachable neighbors for maze solving
+def get_reachable_neighbors(row, col, north_wall, east_wall, rows, cols, visited_solver):
+    neighbors = []
+    for direction in ['N', 'E', 'S', 'W']:
+        if can_move(row, col, direction, north_wall, east_wall, rows, cols):
+            #get neighbor coordinates based on direction
+            dr = { 'N':1, 'E':0, 'S':-1, 'W':0}
+            dc = { 'N':0, 'E':1, 'S':0, 'W':-1}
+            if not visited_solver[row + dr[direction]][col + dc[direction]]:
+                neighbors.append((row + dr[direction], col + dc[direction], direction))
+    return neighbors
+
 
 
 def main():
