@@ -134,6 +134,20 @@ def create_entrance_exit(rows,cols,north_wall,east_wall):
     return entrance_row, exit_row
 
 
+#Maze -solving with DFS backtracking
+
+#finding entrance and exit cells
+
+def find_entrance_exit(rows,cols,east_wall):
+    entrance = None
+    exit_cell = None
+    for row in range(rows):
+        if not east_wall[row][0]:
+            entrance = (row, 0)
+        if not east_wall[row][cols]:
+            exit_cell = (row, cols-1)
+    return entrance, exit_cell
+
 def main():
     pygame.init()
 
