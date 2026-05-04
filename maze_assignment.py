@@ -148,6 +148,24 @@ def find_entrance_exit(rows,cols,east_wall):
             exit_cell = (row, cols-1)
     return entrance, exit_cell
 
+#checking if we can move in a direction from current cell
+def can_move(row, col, direction, north_wall, east_wall, rows, cols):
+    if direction == 'N':
+        if row+ 1 < rows and not north_wall[row+1][col]:
+            return True
+    elif direction == 'E':
+        if col+ 1 < cols and not east_wall[row][col+1]:
+            return True
+    elif direction == 'S':
+        if row- 1 >= 0 and not north_wall[row][col]:
+            return True
+    elif direction == 'W':
+        if col- 1 >= 0 and not east_wall[row][col]:
+            return True
+    return False
+
+
+
 def main():
     pygame.init()
 
