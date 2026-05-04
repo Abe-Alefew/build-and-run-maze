@@ -46,9 +46,9 @@ def draw_maze(screen, north_wall,east_wall, rows, cols):
                 pygame.draw.line(screen, BLACK, (x+CELL_SIZE,y), (x+CELL_SIZE,y+CELL_SIZE), 2)
 
             
-            #draw the left border
-            if east_wall[row][0]:
-                pygame.draw.line(screen, BLACK, (x,y), (x,y+CELL_SIZE), 2)
+        #draw the left border
+        if east_wall[row][0]:
+            pygame.draw.line(screen, BLACK, (MARGIN,y), (MARGIN,y+CELL_SIZE), 2)
     
     for col in range(cols):
         x,y = cell_to_pixel(0,col,rows)
@@ -104,10 +104,11 @@ def generate_maze( north_wall, east_wall, visited, rows, cols,screen=None,clock=
 
         if neighbors:
             chosen_neighbor = random.choice(neighbors)
+           
 
             remove_wall(row, col, chosen_neighbor[2], north_wall, east_wall)
             visited[chosen_neighbor[0]][chosen_neighbor[1]] = True
-            stack.append((chosen_neighbor[0], chosen_neighbor[1]))
+            stack.append(current)
             current = (chosen_neighbor[0], chosen_neighbor[1])
 
             if animate and screen:
@@ -121,6 +122,16 @@ def generate_maze( north_wall, east_wall, visited, rows, cols,screen=None,clock=
             #backtrack - dead end reached
             current = stack.pop()
 
+def create_entrance_exit(rows,cols,north_wall,east_wall):
+    # as entrance, let's open a random-cell's west wall on left edge
+    entrance_row = random.randint(0, rows-1)
+    east_wall[entrance_row][0] = False
+
+    #as exit, let's open a random-cell's east wall on right edge
+    exit_row = random.randint(0, rows-1)
+    east_wall[exit_row][cols] = False
+
+    return entrance_row, exit_row
 
 
 def main():
@@ -132,9 +143,17 @@ def main():
     HEIGHT = ROWS * CELL_SIZE + 2 * MARGIN
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Maze Visualization")
+    clock= pygame.time.Clock()
 
     north_wall, east_wall = initialize_maze(ROWS, COLS)
     visited = set_visited(ROWS, COLS)
+
+    #generate maze with animation
+    generate_maze(north_wall, east_wall, visited, ROWS, COLS, screen=screen, animate=True,clock=clock)
+    
+    # unvisited = sum(1 for i in range(ROWS) for j in range(COLS) if not visited[i][j])
+    # print(f"Unvisited cells: {unvisited}")  # Must be 0
+    create_entrance_exit(ROWS, COLS, north_wall, east_wall)
 
     draw_maze(screen, north_wall, east_wall, ROWS, COLS)
 
