@@ -176,7 +176,41 @@ def get_reachable_neighbors(row, col, north_wall, east_wall, rows, cols, visited
                 neighbors.append((row + dr[direction], col + dc[direction], direction))
     return neighbors
 
+#solving the maze with DFS backtracking
+def solve_maze(rows,cols,north_wall, east_wall,screen, animate=False):
 
+    entrance,exit_cell = find_entrance_exit(rows,cols,east_wall)
+
+    if not entrance or not exit_cell:
+        print("Entrance or exit not found")
+        return [], []
+
+    visited_solver = set_visited(rows,cols)
+    stack = []
+    dead_ends = set()
+
+    current = entrance
+    visited_solver[current[0]][current[1]] = True
+
+    while current != exit_cell:
+        neighbors = get_reachable_neighbors(current[0], current[1], north_wall, east_wall, rows, cols, visited_solver)
+        if neighbors:
+            next_cell = neighbors[0]
+            stack.append(current)
+            visited_solver[next_cell[0]][next_cell[1]] = True
+            current = (next_cell[0], next_cell[1])
+        else:
+            dead_ends.add(current)
+            current = stack.pop()
+        
+        if animate and screen:
+            draw_maze(screen,north_wall,east_wall, rows,cols,path=stack,dead_ends=dead_ends,current=current)
+            pygame.time.delay(50)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+    return stack, dead_ends
 
 def main():
     pygame.init()
