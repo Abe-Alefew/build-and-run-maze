@@ -34,6 +34,7 @@ def draw_maze(screen, north_wall,east_wall, rows, cols, path=None, dead_ends=Non
     screen.fill(WHITE)
 
     for row in range(rows):
+        _, row_y = cell_to_pixel(row, 0 , rows)
         for col in range(cols):
             x,y = cell_to_pixel(row,col,rows)
 
@@ -48,7 +49,7 @@ def draw_maze(screen, north_wall,east_wall, rows, cols, path=None, dead_ends=Non
             
         #draw the left border
         if east_wall[row][0]:
-            pygame.draw.line(screen, BLACK, (MARGIN,y), (MARGIN,y+CELL_SIZE), 2)
+            pygame.draw.line(screen, BLACK, (MARGIN,row_y), (MARGIN,row_y+CELL_SIZE), 2)
     
     for col in range(cols):
         x,y = cell_to_pixel(0,col,rows)
@@ -70,7 +71,7 @@ def draw_maze(screen, north_wall,east_wall, rows, cols, path=None, dead_ends=Non
     #drawing current cell in red
     if current:
         x,y = cell_to_pixel(current[0],current[1],rows)
-        pygame.draw.rect(screen, RED, (x+CELL_SIZE//2,y+CELL_SIZE//2),CELL_SIZE//4)
+        pygame.draw.circle(screen, RED, (x + CELL_SIZE // 2, y + CELL_SIZE // 2), CELL_SIZE // 4)
     pygame.display.flip()
 
 
@@ -171,24 +172,34 @@ def can_move(row, col, direction, north_wall, east_wall, rows, cols):
     elif direction == 'E':
         if col+ 1 < cols and not east_wall[row][col+1]:
             return True
+        if col == cols -1 and not east_wall[row][cols]:
+            return True
     elif direction == 'S':
         if row- 1 >= 0 and not north_wall[row][col]:
             return True
     elif direction == 'W':
         if col- 1 >= 0 and not east_wall[row][col]:
             return True
+        if col == 0 and not east_wall[row][0]:
+            return True
     return False
 
 #checking reachable neighbors for maze solving
 def get_reachable_neighbors(row, col, north_wall, east_wall, rows, cols, visited_solver):
     neighbors = []
-    for direction in ['N', 'E', 'S', 'W']:
+
+    dr = {'N':1, 'E':0, 'S':-1, 'W':0}
+    dc = {'N':0, 'E':1, 'S':0, 'W':-1}
+
+    for direction in ['N','E','S','W']:
         if can_move(row, col, direction, north_wall, east_wall, rows, cols):
-            #get neighbor coordinates based on direction
-            dr = { 'N':1, 'E':0, 'S':-1, 'W':0}
-            dc = { 'N':0, 'E':1, 'S':0, 'W':-1}
-            if not visited_solver[row + dr[direction]][col + dc[direction]]:
-                neighbors.append((row + dr[direction], col + dc[direction], direction))
+            nr = row + dr[direction]
+            nc = col + dc[direction]
+
+            if 0 <= nr < rows and 0 <= nc < cols:
+                if not visited_solver[nr][nc]:
+                    neighbors.append((nr, nc, direction))
+
     return neighbors
 
 #solving the maze with DFS backtracking
@@ -220,11 +231,12 @@ def solve_maze(rows,cols,north_wall, east_wall,screen, animate=False):
         
         if animate and screen:
             draw_maze(screen,north_wall,east_wall, rows,cols,path=stack,dead_ends=dead_ends,current=current)
-            pygame.time.delay(50)
+            pygame.time.delay(30)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+    stack.append(current)
     return stack, dead_ends
 
 def main():
@@ -260,10 +272,10 @@ def main():
             if event.type == pygame.KEYDOWN:
                 waiting= False
 
-    path, dead_ends = solve_maze(ROWS,COLS, north_wall, east_wall, screen, animate=False)
+    path, dead_ends = solve_maze(ROWS,COLS, north_wall, east_wall, screen, animate=True)
 
     #draw final solved state
-    draw_maze(screen, north_wall, east_wall,ROWS,COLS, path=path, dead_ends=dead_ends)
+    draw_maze(screen, north_wall, east_wall,ROWS,COLS, path=path, dead_ends=dead_ends, current=path[-1])
 
     running = True
     while running:
