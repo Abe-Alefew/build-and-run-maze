@@ -246,9 +246,24 @@ def main():
     
     # unvisited = sum(1 for i in range(ROWS) for j in range(COLS) if not visited[i][j])
     # print(f"Unvisited cells: {unvisited}")  # Must be 0
-    create_entrance_exit(ROWS, COLS, north_wall, east_wall)
+    entrance_row, exit_row=create_entrance_exit(ROWS, COLS, north_wall, east_wall)
+    
 
     draw_maze(screen, north_wall, east_wall, ROWS, COLS)
+
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                waiting= False
+
+    path, dead_ends = solve_maze(ROWS,COLS, north_wall, east_wall, screen, animate=False)
+
+    #draw final solved state
+    draw_maze(screen, north_wall, east_wall,ROWS,COLS, path=path, dead_ends=dead_ends)
 
     running = True
     while running:
@@ -256,6 +271,7 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
     pygame.quit()
+    sys.exit()
 
 if __name__ == "__main__":
     
