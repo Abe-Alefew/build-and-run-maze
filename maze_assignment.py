@@ -30,7 +30,7 @@ def set_visited(rows,cols):
     return visited
 
 
-def draw_maze(screen, north_wall,east_wall, rows, cols):
+def draw_maze(screen, north_wall,east_wall, rows, cols, path=None, dead_ends=None, current=None):
     screen.fill(WHITE)
 
     for row in range(rows):
@@ -56,6 +56,21 @@ def draw_maze(screen, north_wall,east_wall, rows, cols):
         if north_wall[0][col]:
             
             pygame.draw.line(screen, BLACK, (x,y+CELL_SIZE), (x+CELL_SIZE,y+CELL_SIZE), 2)
+    
+    #drawing deadends in blue
+    if dead_ends:
+        for (r,c) in dead_ends:
+            x,y = cell_to_pixel(r,c,rows)
+            pygame.draw.rect(screen, BLUE, (x+4,y+4,CELL_SIZE-8,CELL_SIZE-8))
+    #drawing path in green
+    if path:
+        for (r,c) in path:
+            x,y = cell_to_pixel(r,c,rows)
+            pygame.draw.rect(screen, GREEN, (x+4,y+4,CELL_SIZE-8,CELL_SIZE-8))
+    #drawing current cell in red
+    if current:
+        x,y = cell_to_pixel(current[0],current[1],rows)
+        pygame.draw.rect(screen, RED, (x+CELL_SIZE//2,y+CELL_SIZE//2),CELL_SIZE//4)
     pygame.display.flip()
 
 
