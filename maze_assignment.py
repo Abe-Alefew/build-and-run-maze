@@ -112,7 +112,7 @@ def remove_wall(row, col, direction, north_wall, east_wall):
     elif direction == 'W':
         east_wall[row][col] = False
 
-def generate_maze( north_wall, east_wall, visited, rows, cols,screen=None,clock=None, animate=False,allow_cycles=False):
+def generate_maze( north_wall, east_wall, visited, rows, cols,screen=None,clock=None, animate=False):
     #picking random start
 
     start_row = random.randint(0, rows-1)
@@ -136,11 +136,7 @@ def generate_maze( north_wall, east_wall, visited, rows, cols,screen=None,clock=
             current = (chosen_neighbor[0], chosen_neighbor[1])
 
 
-            #removing random extra walls to create cycles in the maze
-            if allow_cycles and random.random() < 0.05:
-                remove_random_extra_walls(north_wall, east_wall, rows, cols)
-
-
+            
             if animate and screen:
                 draw_maze(screen, north_wall, east_wall, rows, cols)
                 pygame.time.delay(30)
@@ -252,12 +248,24 @@ def solve_maze(rows,cols,north_wall, east_wall,screen, animate=False):
 
 # additonal - optional challenge
 
-# removing random extra walls to create cycles in the maze
-def remove_random_extra_walls(north_wall, east_wall, rows, cols):
-    #trying to remove random interior north walls
-    r= random.randint(2, rows-1) #avoid phantom row and top edge
-    c= random.randint(0, cols-1)
-    north_wall[r][c] = False
+
+
+#separate function for cycle creation to keep maze generation cleaner
+
+def add_cycles(north_wall,east_wall,rows,cols,num_cycles=None):
+    if num_cycles is None:
+        num_cycles = max(1, (rows*cols) // 20)
+    for _ in range(num_cycles):
+        if random.random() < 0.5:
+            # Remove random interior north wall
+            r = random.randint(2, rows - 1)
+            c = random.randint(0, cols - 1)
+            north_wall[r][c] = False
+        else:
+            # Remove random interior east wall
+            r = random.randint(0, rows - 1)
+            c = random.randint(1, cols - 1)  # avoid left/right border
+            east_wall[r][c] = False
 def main():
     pygame.init()
 
@@ -272,9 +280,9 @@ def main():
     north_wall, east_wall = initialize_maze(ROWS, COLS)
     visited = set_visited(ROWS, COLS)
 
-    allow_cycles = input("Allow cycles in the maze? (y/n): ").strip().lower() == 'y'
-    #generate maze with animation
-    generate_maze(north_wall, east_wall, visited, ROWS, COLS, screen=screen, animate=True,clock=clock, allow_cycles=allow_cycles)
+    
+    #generate maze with animation - first stage : perfect maze without cycles
+    generate_maze(north_wall, east_wall, visited, ROWS, COLS, screen=screen, animate=True,clock=clock)
     
     # unvisited = sum(1 for i in range(ROWS) for j in range(COLS) if not visited[i][j])
     # print(f"Unvisited cells: {unvisited}")  # Must be 0
@@ -283,22 +291,41 @@ def main():
 
     draw_maze(screen, north_wall, east_wall, ROWS, COLS)
 
-    waiting = True
-    while waiting:
+    #cycles generation stage - optional
+    pygame.display.set_caption("Perfect maze done - Press C for cycles, any key to solve maze")
+
+    waiting_for_cycle = True
+    while waiting_for_cycle:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-                waiting= False
+                if event.key == pygame.K_c:
+                    #add cycles and redraw maze
+                    add_cycles(north_wall, east_wall, ROWS, COLS)
+                    draw_maze(screen, north_wall, east_wall, ROWS, COLS)
+                    pygame.display.set_caption("Cycles added - Press any key to solve maze")
+                    confirmed = False
+                    while not confirmed:
+                        for e in pygame.event.get():
+                            if e.type == pygame.QUIT:
+                                pygame.quit()
+                                sys.exit()
+                            if e.type == pygame.KEYDOWN:
+                                confirmed = True
+                waiting_for_cycle= False
 
+
+    # stage 3 - solving
+    pygame.display.set_caption("Solving maze with DFS backtracking...")
     path, dead_ends = solve_maze(ROWS,COLS, north_wall, east_wall, screen, animate=True)
 
     print(f"Path length:   {len(path)}")
     print(f"Dead ends hit: {len(dead_ends)}")
     #draw final solved state
     draw_maze(screen, north_wall, east_wall,ROWS,COLS, path=path, dead_ends=dead_ends, current=path[-1])
-
+    pygame.display.set_caption("Maze solved! Close the window to exit.")
     running = True
     while running:
         for event in pygame.event.get():
