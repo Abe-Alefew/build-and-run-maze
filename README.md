@@ -189,8 +189,4 @@ Because a perfect maze is a tree. Every dead end forces a turn, and since there 
 Because `visited_solver` prevents the solver from entering any cell twice. Cycles become irrelevant — the solver treats them like any other junction and moves on.
 
 
----
 
-## 📄 License
-
-MIT License — free to use and modify.
