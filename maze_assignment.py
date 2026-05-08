@@ -58,20 +58,25 @@ def draw_maze(screen, north_wall,east_wall, rows, cols, path=None, dead_ends=Non
             
             pygame.draw.line(screen, BLACK, (x,y+CELL_SIZE), (x+CELL_SIZE,y+CELL_SIZE), 2)
     
-    #drawing deadends in blue
+    # Draw dead ends (blue dots)
     if dead_ends:
-        for (r,c) in dead_ends:
-            x,y = cell_to_pixel(r,c,rows)
-            pygame.draw.rect(screen, BLUE, (x+4,y+4,CELL_SIZE-8,CELL_SIZE-8))
-    #drawing path in green
+        for (r, c) in dead_ends:
+            x, y = cell_to_pixel(r, c, rows)
+            pygame.draw.circle(screen, BLUE,
+                (x + CELL_SIZE // 2, y + CELL_SIZE // 2), CELL_SIZE // 4)
+
+    # Draw path (red dots)
     if path:
-        for (r,c) in path:
-            x,y = cell_to_pixel(r,c,rows)
-            pygame.draw.rect(screen, GREEN, (x+4,y+4,CELL_SIZE-8,CELL_SIZE-8))
-    #drawing current cell in red
+        for (r, c) in path:
+            x, y = cell_to_pixel(r, c, rows)
+            pygame.draw.circle(screen, RED,
+                (x + CELL_SIZE // 2, y + CELL_SIZE // 2), CELL_SIZE // 4)
+
+    # Draw current cell (larger red dot)
     if current:
-        x,y = cell_to_pixel(current[0],current[1],rows)
-        pygame.draw.circle(screen, RED, (x + CELL_SIZE // 2, y + CELL_SIZE // 2), CELL_SIZE // 4)
+        x, y = cell_to_pixel(current[0], current[1], rows)
+        pygame.draw.circle(screen, RED,
+            (x + CELL_SIZE // 2, y + CELL_SIZE // 2), CELL_SIZE // 3)
     pygame.display.flip()
 
 
@@ -167,20 +172,16 @@ def find_entrance_exit(rows,cols,east_wall):
 #checking if we can move in a direction from current cell
 def can_move(row, col, direction, north_wall, east_wall, rows, cols):
     if direction == 'N':
-        if row+ 1 < rows and not north_wall[row+1][col]:
-            return True
-    elif direction == 'E':
-        if col+ 1 < cols and not east_wall[row][col+1]:
-            return True
-        if col == cols -1 and not east_wall[row][cols]:
+        if row + 1 < rows and not north_wall[row + 1][col]:
             return True
     elif direction == 'S':
-        if row- 1 >= 0 and not north_wall[row][col]:
+        if row - 1 >= 0 and not north_wall[row][col]:
+            return True
+    elif direction == 'E':
+        if col + 1 < cols and not east_wall[row][col + 1]:
             return True
     elif direction == 'W':
-        if col- 1 >= 0 and not east_wall[row][col]:
-            return True
-        if col == 0 and not east_wall[row][0]:
+        if col - 1 >= 0 and not east_wall[row][col]:
             return True
     return False
 
