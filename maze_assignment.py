@@ -60,7 +60,10 @@ def draw_maze(screen, north_wall,east_wall, rows, cols, path=None, dead_ends=Non
     
     # Draw dead ends (blue dots)
     if dead_ends:
+        path_set = set(path) if path else set()
         for (r, c) in dead_ends:
+            if (r, c) in path_set:
+                continue  # Skip if this cell is part of the current path
             x, y = cell_to_pixel(r, c, rows)
             pygame.draw.circle(screen, BLUE,
                 (x + CELL_SIZE // 2, y + CELL_SIZE // 2), CELL_SIZE // 4)
@@ -109,7 +112,7 @@ def remove_wall(row, col, direction, north_wall, east_wall):
     elif direction == 'W':
         east_wall[row][col] = False
 
-def generate_maze( north_wall, east_wall, visited, rows, cols,screen=None,clock=None, animate=False,):
+def generate_maze( north_wall, east_wall, visited, rows, cols,screen=None,clock=None, animate=False,allow_cycles=False):
     #picking random start
 
     start_row = random.randint(0, rows-1)
@@ -131,6 +134,12 @@ def generate_maze( north_wall, east_wall, visited, rows, cols,screen=None,clock=
             visited[chosen_neighbor[0]][chosen_neighbor[1]] = True
             stack.append(current)
             current = (chosen_neighbor[0], chosen_neighbor[1])
+
+
+            #removing random extra walls to create cycles in the maze
+            if allow_cycles and random.random() < 0.05:
+                remove_random_extra_walls(north_wall, east_wall, rows, cols)
+
 
             if animate and screen:
                 draw_maze(screen, north_wall, east_wall, rows, cols)
@@ -222,7 +231,7 @@ def solve_maze(rows,cols,north_wall, east_wall,screen, animate=False):
     while current != exit_cell:
         neighbors = get_reachable_neighbors(current[0], current[1], north_wall, east_wall, rows, cols, visited_solver)
         if neighbors:
-            next_cell = neighbors[0]
+            next_cell = random.choice(neighbors)
             stack.append(current)
             visited_solver[next_cell[0]][next_cell[1]] = True
             current = (next_cell[0], next_cell[1])
@@ -240,6 +249,15 @@ def solve_maze(rows,cols,north_wall, east_wall,screen, animate=False):
     stack.append(current)
     return stack, dead_ends
 
+
+# additonal - optional challenge
+
+# removing random extra walls to create cycles in the maze
+def remove_random_extra_walls(north_wall, east_wall, rows, cols):
+    #trying to remove random interior north walls
+    r= random.randint(2, rows-1) #avoid phantom row and top edge
+    c= random.randint(0, cols-1)
+    north_wall[r][c] = False
 def main():
     pygame.init()
 
@@ -254,8 +272,9 @@ def main():
     north_wall, east_wall = initialize_maze(ROWS, COLS)
     visited = set_visited(ROWS, COLS)
 
+    allow_cycles = input("Allow cycles in the maze? (y/n): ").strip().lower() == 'y'
     #generate maze with animation
-    generate_maze(north_wall, east_wall, visited, ROWS, COLS, screen=screen, animate=True,clock=clock)
+    generate_maze(north_wall, east_wall, visited, ROWS, COLS, screen=screen, animate=True,clock=clock, allow_cycles=allow_cycles)
     
     # unvisited = sum(1 for i in range(ROWS) for j in range(COLS) if not visited[i][j])
     # print(f"Unvisited cells: {unvisited}")  # Must be 0
@@ -275,6 +294,8 @@ def main():
 
     path, dead_ends = solve_maze(ROWS,COLS, north_wall, east_wall, screen, animate=True)
 
+    print(f"Path length:   {len(path)}")
+    print(f"Dead ends hit: {len(dead_ends)}")
     #draw final solved state
     draw_maze(screen, north_wall, east_wall,ROWS,COLS, path=path, dead_ends=dead_ends, current=path[-1])
 
