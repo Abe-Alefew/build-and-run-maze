@@ -1,11 +1,11 @@
-# 🧩 Maze Generator & Solver
+# Maze Generator & Solver
 
-A Python + Pygame program that generates a perfect maze using a stack-based DFS algorithm and solves it using backtracking — with full animation at every step.
+A Python + Pygame program that generates a perfect maze using a stack-based DFS algorithm and solves it using backtracking, with full animation at every step.
 
 ---
 
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -16,8 +16,8 @@ A Python + Pygame program that generates a perfect maze using a stack-based DFS 
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/maze-generator.git
-cd maze-generator
+git clone https://github.com/Abe-Alefew/build-and-run-maze.git
+cd build-and-run-maze
 
 # Install dependencies
 pip install pygame
